@@ -1,0 +1,93 @@
+#include <stdlib.h>
+#include <stdbool.h>
+
+#define MAX_SIZE 101
+
+// Define a simple circular queue structure.
+typedef struct {
+    int data[MAX_SIZE];
+    int front;  // Index of the front element
+    int rear;   // Index of the next insertion point
+    int size;   // Number of elements in the queue
+} Queue;
+
+// Define the MyStack structure with two queues.
+typedef struct {
+    Queue q1; // Primary queue holding the stack order.
+    Queue q2; // Auxiliary queue for reordering.
+} MyStack;
+
+/* Helper function to initialize a queue */
+void initQueue(Queue* q) {
+    q->front = 0;
+    q->rear = 0;
+    q->size = 0;
+}
+
+/** Initialize your data structure here. */
+MyStack* myStackCreate() {
+    MyStack* obj = (MyStack*)malloc(sizeof(MyStack));
+    initQueue(&obj->q1);
+    initQueue(&obj->q2);
+    return obj;
+}
+
+/** Push element x onto stack. */
+void myStackPush(MyStack* obj, int x) {
+    // Enqueue x to the auxiliary queue (q2)
+    obj->q2.data[obj->q2.rear] = x;
+    obj->q2.rear = (obj->q2.rear + 1) % MAX_SIZE;
+    obj->q2.size++;
+
+    // Move all elements from the primary queue (q1) to the auxiliary queue (q2)
+    while (obj->q1.size > 0) {
+        int val = obj->q1.data[obj->q1.front];
+        obj->q1.front = (obj->q1.front + 1) % MAX_SIZE;
+        obj->q1.size--;
+
+        obj->q2.data[obj->q2.rear] = val;
+        obj->q2.rear = (obj->q2.rear + 1) % MAX_SIZE;
+        obj->q2.size++;
+    }
+
+    // Swap q1 and q2 so that q1 always has the stack order with the top element at the front.
+    Queue temp = obj->q1;
+    obj->q1 = obj->q2;
+    obj->q2 = temp;
+}
+
+/** Removes the element on top of the stack and returns that element. */
+int myStackPop(MyStack* obj) {
+    // Since the top element is at the front of q1, dequeue it.
+    if (obj->q1.size == 0) return -1; // This case should not occur as per problem constraints.
+    int val = obj->q1.data[obj->q1.front];
+    obj->q1.front = (obj->q1.front + 1) % MAX_SIZE;
+    obj->q1.size--;
+    return val;
+}
+
+/** Get the top element. */
+int myStackTop(MyStack* obj) {
+    if (obj->q1.size == 0) return -1; // Again, should not happen if calls are valid.
+    return obj->q1.data[obj->q1.front];
+}
+
+/** Returns whether the stack is empty. */
+bool myStackEmpty(MyStack* obj) {
+    return (obj->q1.size == 0);
+}
+
+/** Free the memory allocated to the stack. */
+void myStackFree(MyStack* obj) {
+    free(obj);
+}
+
+/* 
+ * Your MyStack struct will be instantiated and called as such:
+ * MyStack* obj = myStackCreate();
+ * myStackPush(obj, x);
+ * int param_2 = myStackPop(obj);
+ * int param_3 = myStackTop(obj);
+ * bool param_4 = myStackEmpty(obj);
+ * myStackFree(obj);
+ */
