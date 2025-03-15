@@ -1,0 +1,98 @@
+#include <stdlib.h>
+#include <stdbool.h>
+#include <stdio.h>
+
+#define MAX_SIZE 101  // Adjusted capacity for our use case
+
+// Define a simple stack structure.
+typedef struct {
+    int data[MAX_SIZE];
+    int top; // Index of the next insertion (also represents the number of elements)
+} Stack;
+
+// Initialize a stack.
+void initStack(Stack* s) {
+    s->top = 0;
+}
+
+// Push element x onto the stack.
+void pushStack(Stack* s, int x) {
+    s->data[s->top++] = x;
+}
+
+// Pop the top element from the stack.
+int popStack(Stack* s) {
+    return s->data[--s->top];
+}
+
+// Peek the top element of the stack.
+int peekStack(Stack* s) {
+    return s->data[s->top - 1];
+}
+
+// Check if the stack is empty.
+bool isEmptyStack(Stack* s) {
+    return s->top == 0;
+}
+
+// Define the MyQueue structure using two stacks.
+typedef struct {
+    Stack inStack;  // Stack for enqueue operations.
+    Stack outStack; // Stack for dequeue operations.
+} MyQueue;
+
+/** Initialize your data structure here. */
+MyQueue* myQueueCreate() {
+    MyQueue* obj = (MyQueue*)malloc(sizeof(MyQueue));
+    initStack(&obj->inStack);
+    initStack(&obj->outStack);
+    return obj;
+}
+
+/** Push element x to the back of queue. */
+void myQueuePush(MyQueue* obj, int x) {
+    pushStack(&obj->inStack, x);
+}
+
+/** Removes the element from in front of queue and returns that element. */
+int myQueuePop(MyQueue* obj) {
+    // If outStack is empty, transfer all elements from inStack.
+    if (isEmptyStack(&obj->outStack)) {
+        while (!isEmptyStack(&obj->inStack)) {
+            int val = popStack(&obj->inStack);
+            pushStack(&obj->outStack, val);
+        }
+    }
+    return popStack(&obj->outStack);
+}
+
+/** Get the front element. */
+int myQueuePeek(MyQueue* obj) {
+    if (isEmptyStack(&obj->outStack)) {
+        while (!isEmptyStack(&obj->inStack)) {
+            int val = popStack(&obj->inStack);
+            pushStack(&obj->outStack, val);
+        }
+    }
+    return peekStack(&obj->outStack);
+}
+
+/** Returns whether the queue is empty. */
+bool myQueueEmpty(MyQueue* obj) {
+    return isEmptyStack(&obj->inStack) && isEmptyStack(&obj->outStack);
+}
+
+/** Free the memory allocated to the queue. */
+void myQueueFree(MyQueue* obj) {
+    free(obj);
+}
+
+/*
+ * Your MyQueue struct will be instantiated and called as such:
+ * MyQueue* obj = myQueueCreate();
+ * myQueuePush(obj, x);
+ * int param_2 = myQueuePop(obj);
+ * int param_3 = myQueuePeek(obj);
+ * bool param_4 = myQueueEmpty(obj);
+ * myQueueFree(obj);
+ */
