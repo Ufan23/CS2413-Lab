@@ -1,0 +1,45 @@
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     struct TreeNode *left;
+ *     struct TreeNode *right;
+ * };
+ */
+
+/* ---------- helper: count nodes so we can malloc precisely ---------- */
+static int countNodes(struct TreeNode *root) {
+    return root ? 1 + countNodes(root->left) + countNodes(root->right) : 0;
+}
+
+/* ---------- main LeetCode function ---------- */
+int* inorderTraversal(struct TreeNode* root, int* returnSize) {
+
+    if (!root) {                      // empty tree
+        *returnSize = 0;
+        return NULL;                  // LeetCode accepts NULL for empty output
+    }
+
+    int n = countNodes(root);         // ≤ 100 by constraint
+    int *res = (int*)malloc(sizeof(int) * n);
+
+    /* iterative in‑order: Left → Root → Right */
+    struct TreeNode *stack[101];      // safe size for ≤ 100 nodes
+    int top = 0, idx = 0;
+    struct TreeNode *curr = root;
+
+    while (curr || top) {
+        /* go as far left as possible, pushing path onto stack */
+        while (curr) {
+            stack[top++] = curr;
+            curr = curr->left;
+        }
+        /* pop the last left‑most node */
+        curr = stack[--top];
+        res[idx++] = curr->val;       // visit root
+        curr = curr->right;           // then traverse right subtree
+    }
+
+    *returnSize = idx;
+    return res;
+}
