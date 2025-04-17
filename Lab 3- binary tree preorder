@@ -1,0 +1,47 @@
+/**
+/* Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     struct TreeNode *left;
+ *     struct TreeNode *right;
+ * };
+ */
+
+/* -------- helper: count how many nodes are in the tree -------- */
+static int countNodes(struct TreeNode *root) {
+    if (!root) return 0;
+    return 1 + countNodes(root->left) + countNodes(root->right);
+}
+
+/* -------- main function required by LeetCode -------- */
+int* preorderTraversal(struct TreeNode* root, int* returnSize) {
+
+    /* 1. edge‑case: empty tree */
+    if (!root) {
+        *returnSize = 0;
+        return NULL;                  // LeetCode accepts NULL for empty result
+    }
+
+    /* 2. allocate result array */
+    int n = countNodes(root);
+    int *res = (int*)malloc(sizeof(int) * n);   // caller will free()
+    *returnSize = 0;
+
+    /* 3. iterative pre‑order with explicit stack */
+    struct TreeNode *stack[101];   // ≤ 100 nodes per constraints → size 101 is safe
+    int top = 0;
+    stack[top++] = root;
+
+    while (top) {
+        struct TreeNode *node = stack[--top];
+
+        /* visit root */
+        res[(*returnSize)++] = node->val;
+
+        /* push right first so left is processed next */
+        if (node->right) stack[top++] = node->right;
+        if (node->left)  stack[top++] = node->left;
+    }
+
+    return res;
+}
